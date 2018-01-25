@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CouchBaseTest</string>
+    <string name="button">Start Test</string>
+    <string name="buttonBad">Start Bad Test</string>
+</resources>
