@@ -5,16 +5,29 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.DataSource;
+import com.couchbase.lite.Dictionary;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import static com.example.itai.couchbasetest.DBHandler.lock;
 import static com.example.itai.couchbasetest.MyContentProvider.INSERT_TEST;
 import static com.example.itai.couchbasetest.MyContentProvider.PROVIDER;
 import static com.example.itai.couchbasetest.MyContentProvider.QUERY_TEST;
@@ -86,8 +99,62 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Good test ended", Toast.LENGTH_SHORT).show();
             }
         });
+        Button test3 = (Button) findViewById(R.id.startTestButton3);
+        test3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                test3();
+            }
+        });
 
     }
 
 
+    private void test3() {
+        DBHandler dbHand = DBHandler.getInstance(this);
+        MutableDocument newDoc = new MutableDocument();
+        HashMap map = new HashMap();
+        ArrayList<String> values = new ArrayList<>();
+        values.add("first");
+        values.add("second");
+        map.put("name", "map");
+        map.put("array", values);
+
+        newDoc.setValue(HASH_MAP, map);
+        try {
+            lock.lock();
+            dbHand.mDb.save(newDoc);
+
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        } finally {
+            if (lock.isLocked()) {
+                lock.unlock();
+            }
+        }
+        Expression where1 = Expression.property(HASH_MAP+"."+"array").in("first");
+        Expression where2 = Expression.property("first").in(HASH_MAP+"."+"array");
+        queryTest3(where1);
+        queryTest3(where2);
+    }
+
+    private void queryTest3(Expression where){
+
+        Query query = Query.select(SelectResult.all()).from(DataSource.database(DBHandler.getInstance().mDb)).where(where);
+        lock.lock();
+        ResultSet resultSet = null;
+        try {
+            resultSet = query.execute();
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        lock.unlock();
+        if(resultSet !=null){
+            Result row;
+        while ((row = resultSet.next()) != null) {
+            Dictionary dictionary = (Dictionary) row.getValue(HASH_MAP);
+            HashMap map = new HashMap(dictionary.toMap());
+            Log.d("MainActivity", "queryTest3: " + map.get("name"));
+        }
+    }}
 }
