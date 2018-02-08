@@ -65,30 +65,6 @@ public class DBHandler {
         }
     }
 
-    public long insert2(){
-        MutableDocument newDoc = new MutableDocument();
-        HashMap map = new HashMap();
-        ArrayList<String> values = new ArrayList<>();
-        values.add("first");
-        values.add("second");
-        map.put("name", "map");
-        map.put("array", values);
-
-        newDoc.setValue(HASH_MAP, map);
-        try {
-            lock.lock();
-            DBHandler.getInstance().mDb.save(newDoc);
-
-        } catch (CouchbaseLiteException e) {
-            e.printStackTrace();
-        } finally {
-            if (lock.isLocked()) {
-                lock.unlock();
-            }
-        }
-        return 1;
-    }
-
     long insert(String tableName, ContentValues cv) {
         try {
             MutableDocument newDoc = new MutableDocument();

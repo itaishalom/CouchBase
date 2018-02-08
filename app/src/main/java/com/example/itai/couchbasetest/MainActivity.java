@@ -133,8 +133,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Expression where1 = Expression.property(HASH_MAP+"."+"array").in("first");
+        Expression where1_working = Expression.property(HASH_MAP+"."+"array[0]").in("first");
         Expression where2 = Expression.property("first").in(HASH_MAP+"."+"array");
         queryTest3(where1);
+        queryTest3(where1_working);
         queryTest3(where2);
     }
 
