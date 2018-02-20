@@ -54,7 +54,7 @@ public class MyContentProvider extends ContentProvider {
                 List<String> list = uri.getPathSegments();
                 String table = list.get(list.size() - 2);
                 String name = list.get(list.size() - 1);
-                Expression where = Expression.property(TABLE).equalTo(table).and(Expression.property(HASH_MAP + "." + NAME).equalTo(name));
+                Expression where = Expression.property(TABLE).equalTo(Expression.string(table).and(Expression.property(HASH_MAP + "." + NAME).equalTo(Expression.string(name))));
                 Cursor answer = db.query(where);
                 if (getContext() != null)
                     answer.setNotificationUri(getContext().getContentResolver(), uri);

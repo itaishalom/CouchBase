@@ -14,6 +14,7 @@ import com.couchbase.lite.Dictionary;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
@@ -30,7 +31,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import static com.example.itai.couchbasetest.MainActivity.HASH_MAP;
 import static com.example.itai.couchbasetest.MainActivity.NAME;
 import static com.example.itai.couchbasetest.MainActivity.TABLE;
-import static com.example.itai.couchbasetest.MainActivity.isSafe;
 
 /**
  * Proudly written by Itai on 25/01/2018.
@@ -38,14 +38,16 @@ import static com.example.itai.couchbasetest.MainActivity.isSafe;
 
 public class DBHandler {
     public Database mDb;
+
     private static DBHandler instance = null;
-    public static final ReentrantLock lock = new ReentrantLock();
+    public static final String TIME= "TIME";
 
     public static DBHandler getInstance(Context context) {
         if (instance == null) {
             synchronized (DBHandler.class) {
                 if (instance == null) {
                     instance = new DBHandler(context);
+
                 }
             }
         }
@@ -57,6 +59,7 @@ public class DBHandler {
     }
 
     private DBHandler(Context context) {
+
         DatabaseConfiguration configuration = new DatabaseConfiguration(context);
         try {
             mDb = new Database("testDB", configuration);
@@ -74,6 +77,7 @@ public class DBHandler {
 
             HashMap map = new HashMap();
             map.put(NAME, js.optString(NAME));
+            newDoc.setLong(TIME, System.currentTimeMillis());
             newDoc.setValue(HASH_MAP, map);
          /*   Set<Map.Entry<String, Object>> valsSet = cv.valueSet();
 
@@ -81,7 +85,7 @@ public class DBHandler {
                 Map.Entry me = (Map.Entry) val;
                 newDoc.setValue(me.getKey().toString(), me.getValue());
             }*/
-            lock.lock();
+
             mDb.save(newDoc);
 
         } catch (CouchbaseLiteException e) {
@@ -89,10 +93,7 @@ public class DBHandler {
             return 0;
         } catch (JSONException e) {
             e.printStackTrace();
-        } finally {
-            if (lock.isLocked()) {
-                lock.unlock();
-            }
+
         }
         return 1;
     }
@@ -101,13 +102,11 @@ public class DBHandler {
         SelectResult[] cols = new SelectResult[2];
         cols[0] = SelectResult.expression(Expression.property(TABLE));
         cols[1] = SelectResult.expression(Expression.property(HASH_MAP));
-        Query query = Query.select(cols).from(DataSource.database(mDb)).where(where);
+        Query query = QueryBuilder.select(cols).from(DataSource.database(mDb)).where(where);
         try {
-            if (isSafe)
-                lock.lock();
+
             ResultSet resultSet = query.execute();
-            if (isSafe)
-                lock.unlock();
+
             MatrixCursor cursor = new MatrixCursor(new String[]{TABLE});
 
             Bundle bundle = new Bundle();
