@@ -11,6 +11,7 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Dictionary;
+import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -18,6 +19,7 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.internal.support.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,10 +72,11 @@ public class DBHandler {
 
     long insert(String tableName, ContentValues cv) {
         try {
-            MutableDocument newDoc = new MutableDocument();
+            JSONObject js = new JSONObject(cv.getAsString(HASH_MAP));
+            MutableDocument newDoc = new MutableDocument(js.optString(NAME));
             newDoc.setString(TABLE, tableName);
 
-            JSONObject js = new JSONObject(cv.getAsString(HASH_MAP));
+
 
             HashMap map = new HashMap();
             map.put(NAME, js.optString(NAME));
@@ -86,6 +89,7 @@ public class DBHandler {
                 newDoc.setValue(me.getKey().toString(), me.getValue());
             }*/
 
+            android.util.Log.d("save", "saving: " + js.optString(NAME));
             mDb.save(newDoc);
 
         } catch (CouchbaseLiteException e) {
@@ -130,4 +134,36 @@ public class DBHandler {
         }
         return null;
     }
+
+
+    int updateMap(ContentValues values) {
+        Document doc;
+
+        JSONObject js = null;
+        try {
+            js = new JSONObject(values.getAsString(HASH_MAP));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        HashMap map = new HashMap();
+        map.put(NAME, js.optString(NAME));
+        doc = mDb.getDocument(map.get(NAME).toString());
+        if (doc == null)
+            return 0;
+        map.put(TIME, System.currentTimeMillis());
+        MutableDocument newDoc = doc.toMutable();
+
+        newDoc.setValue(HASH_MAP, map);
+        newDoc.setLong(TIME, System.currentTimeMillis());
+        try {
+            android.util.Log.d("update", "updateMap: "+js.optString(NAME));
+            mDb.save(newDoc);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+            Log.e("DBHANDLER", "DB is not responding");
+            return 0;
+        }
+        return 1;
+    }
+
 }

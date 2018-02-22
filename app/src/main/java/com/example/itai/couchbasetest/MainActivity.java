@@ -34,10 +34,11 @@ public class MainActivity extends AppCompatActivity {
     public static final String NAME = "name";
     MyQueryListner lisnter;
     public static boolean isFirst = true;
+
     private void startTest() {
 
-            Random r = new Random();
-            char c = (char) (r.nextInt(26) + 'a');
+        for(int i = 0 ;i<20;i++) {
+            char c = (char) (i + 'a');
             String name = String.valueOf(c);
             HashMap newHashMap = new HashMap();
             newHashMap.put("name", name);
@@ -51,10 +52,31 @@ public class MainActivity extends AppCompatActivity {
             ContentValues cv = new ContentValues();
             cv.put(HASH_MAP, js.toString());
             getContentResolver().insert(uri, cv);
-
-
-
         }
+        while (true){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for(int j = 0 ;j <5;j++) {
+                Random random = new Random();
+                int i = random.nextInt(20);
+                char c = (char) (i + 'a');
+                String name = String.valueOf(c);
+                JSONObject js = new JSONObject();
+                try {
+                    js.put("name", name);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Uri uri = Uri.parse(("content://" + PROVIDER + "/" + INSERT_TEST + "/allMaps"));
+                ContentValues cv = new ContentValues();
+                cv.put(HASH_MAP, js.toString());
+                getContentResolver().update(uri, cv, null, null);
+            }
+        }
+    }
 
 
     @Override

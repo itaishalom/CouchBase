@@ -1,5 +1,7 @@
 package com.example.itai.couchbasetest;
 
+import android.util.Log;
+
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.ListenerToken;
@@ -11,7 +13,10 @@ import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 
+import java.util.HashMap;
+
 import static com.example.itai.couchbasetest.DBHandler.TIME;
+import static com.example.itai.couchbasetest.MainActivity.HASH_MAP;
 
 
 /**

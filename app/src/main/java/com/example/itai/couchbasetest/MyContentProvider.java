@@ -91,6 +91,15 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        switch (mUriMatch.match(uri)) {
+            case INSERT_NUM:
+                DBHandler db = DBHandler.getInstance(getContext());
+                List<String> list = uri.getPathSegments();
+                String table = list.get(list.size() - 1);
+                long row = db.updateMap( values);
+                if (row > 0)
+                    return (int)row;
+        }
+        return -1;
     }
 }
