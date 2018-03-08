@@ -38,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
     private void startTest() {
 
         for(int i = 0 ;i<20;i++) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             char c = (char) (i + 'a');
             String name = String.valueOf(c);
             HashMap newHashMap = new HashMap();
@@ -54,11 +59,11 @@ public class MainActivity extends AppCompatActivity {
             getContentResolver().insert(uri, cv);
         }
         while (true){
-            try {
+        /*    try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
             for(int j = 0 ;j <5;j++) {
                 Random random = new Random();
                 int i = random.nextInt(20);
@@ -106,10 +111,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         DBHandler db = DBHandler.getInstance(this);
-        if (isFirst) {
-            lisnter = new MyQueryListner();
-            isFirst = false;
-        }
+        finish();
     }
 
 

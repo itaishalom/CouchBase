@@ -5,6 +5,7 @@ import android.util.Log;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.ListenerToken;
+import com.couchbase.lite.Parameters;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.QueryChange;
@@ -28,9 +29,13 @@ public class MyQueryListner {
     Query mQuery;
     long lastTime = 0L;
     myQueryListnerImpl myQueryListner;
+    public static int counter = 0;
 
     public MyQueryListner() {
-        mQuery = QueryBuilder.select(SelectResult.all()).from(DataSource.database(DBHandler.getInstance().mDb)).where(Expression.property(TIME).greaterThan(Expression.longValue(lastTime)));
+        mQuery = QueryBuilder.select(SelectResult.all()).from(DataSource.database(DBHandler.getInstance().mDb)).where(Expression.property(TIME).greaterThan(Expression.parameter(TIME)));
+        Parameters params = new Parameters(mQuery.getParameters());
+        params.setValue(TIME,lastTime);
+        mQuery.setParameters(params);
         myQueryListner = new myQueryListnerImpl();
         mToken = mQuery.addChangeListener(myQueryListner);
     }
@@ -40,14 +45,23 @@ public class MyQueryListner {
         @Override
         public void changed(QueryChange change) {
             ResultSet rows = change.getResults();
+            if(rows == null )
+                return;
             Result row;
+            boolean rowsExists = false;
             if ((row = rows.next()) != null) {
-                lastTime = System.currentTimeMillis();
-                mQuery.removeChangeListener(mToken);
-                mQuery = QueryBuilder.select(SelectResult.all()).from(DataSource.database(DBHandler.getInstance().mDb)).where(Expression.property(TIME).greaterThan(Expression.longValue(lastTime)));
-                myQueryListner = new myQueryListnerImpl();
-                mToken = mQuery.addChangeListener(myQueryListner);
+                counter++;
+                rowsExists = true;
             }
+            if (rowsExists) {
+                lastTime = System.currentTimeMillis();
+                Parameters params = new Parameters(mQuery.getParameters());
+                params.setValue(TIME,lastTime);
+                mQuery.setParameters(params);
+                Log.w("MyQueryListner", "insert: notifications: "+ counter);
+            }
+
+
         }
     }
 }

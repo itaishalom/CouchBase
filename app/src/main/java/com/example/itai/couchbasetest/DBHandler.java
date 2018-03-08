@@ -40,15 +40,16 @@ import static com.example.itai.couchbasetest.MainActivity.TABLE;
 
 public class DBHandler {
     public Database mDb;
-
+    static MyQueryListner lisnter;
     private static DBHandler instance = null;
     public static final String TIME= "TIME";
-
+    public static int Counter = 0;
     public static DBHandler getInstance(Context context) {
         if (instance == null) {
             synchronized (DBHandler.class) {
                 if (instance == null) {
                     instance = new DBHandler(context);
+                    lisnter = new MyQueryListner();
 
                 }
             }
@@ -73,7 +74,7 @@ public class DBHandler {
     long insert(String tableName, ContentValues cv) {
         try {
             JSONObject js = new JSONObject(cv.getAsString(HASH_MAP));
-            MutableDocument newDoc = new MutableDocument(js.optString(NAME));
+            MutableDocument newDoc = new MutableDocument();
             newDoc.setString(TABLE, tableName);
 
 
@@ -89,9 +90,9 @@ public class DBHandler {
                 newDoc.setValue(me.getKey().toString(), me.getValue());
             }*/
 
-            android.util.Log.d("save", "saving: " + js.optString(NAME));
             mDb.save(newDoc);
-
+            Counter++;
+            android.util.Log.w("DBHANDLER", "insert: notifications: " + Counter);
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
             return 0;
