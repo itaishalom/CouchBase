@@ -74,7 +74,7 @@ public class DBHandler {
     long insert(String tableName, ContentValues cv) {
         try {
             JSONObject js = new JSONObject(cv.getAsString(HASH_MAP));
-            MutableDocument newDoc = new MutableDocument();
+            MutableDocument newDoc = new MutableDocument(js.optString(NAME));
             newDoc.setString(TABLE, tableName);
 
 
@@ -92,7 +92,7 @@ public class DBHandler {
 
             mDb.save(newDoc);
             Counter++;
-            android.util.Log.w("DBHANDLER", "insert: notifications: " + Counter);
+            android.util.Log.e("DBHANDLER", "insert: notifications: " + Counter);
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
             return 0;
